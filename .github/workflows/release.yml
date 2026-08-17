@@ -58,7 +58,7 @@ jobs:
         # Pfim, SkiaSharp inkl. runtimes/ native libs).
         run: |
           mkdir -p bundle
-          cp -r KroModIx.Plugin.DysonSphereProgram/bin/Release/net10.0/. bundle/
+          cp -r KroModIx.Plugin.ScheduleI/bin/Release/net10.0/. bundle/
           find bundle -type f \( -name '*.pdb' -o -name '*.xml' -o -name '*.deps.json' \) -delete
           # WICHTIG: die plugin.json im Source-Repo enthält eine hart codierte
           # "version"-Zeile. Beim Release-Tag durch die Tag-Version ersetzen,
@@ -70,12 +70,12 @@ jobs:
             grep '"version"' bundle/plugin.json
           fi
           cd bundle
-          zip -r "../KroModIx.Plugin.DysonSphereProgram-${{ steps.ver.outputs.v }}.zip" .
+          zip -r "../KroModIx.Plugin.ScheduleI-${{ steps.ver.outputs.v }}.zip" .
 
       - name: GitHub-Release
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v3
         with:
-          files: KroModIx.Plugin.DysonSphereProgram-*.zip
+          files: KroModIx.Plugin.ScheduleI-*.zip
           generate_release_notes: true
           fail_on_unmatched_files: true
