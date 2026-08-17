@@ -110,7 +110,7 @@ public sealed partial class NexusModDetailViewModel : ObservableObject
             var html = detail.DescriptionHtml ?? "";
             DescriptionText = string.IsNullOrWhiteSpace(html)
                 ? Strings.T("detail.desc_empty")
-                : NexusDescriptionParser.ToText(html);
+                : _host.Descriptions.ToPlainText(html);
 
             // Falls Katalog-Row keinen Cover hatte, Detail liefert oft doch einen.
             if (Cover is null && !string.IsNullOrEmpty(detail.PictureUrl))
@@ -167,6 +167,7 @@ public sealed partial class NexusModDetailViewModel : ObservableObject
         _host.Shell.OpenExternalUrl(
             $"https://www.nexusmods.com/{ScheduleOneNexusCatalog.GameSlug}/mods/{_modId}");
 
-    // HTML+BBCode-Parsing der Nexus-Description ist in
-    // NexusDescriptionParser ausgelagert (testbar ohne Avalonia/MVVM-Deps).
+    // HTML+BBCode-Parsing der Nexus-Description liegt seit Host v1.20.0 im
+    // zentralen Baukasten `_host.Descriptions` (Contracts v1.19+). Der frueher
+    // hier gepflegte NexusDescriptionParser wurde 1:1 vom Host uebernommen.
 }

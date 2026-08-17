@@ -1,9 +1,10 @@
 <Project>
   <ItemGroup>
-    <!-- v1.18.0: IImageDecoder (zentraler Bild-Decoder mit ffmpeg-Chain
-         fuer WebP/AVIF/DDS/HEIC) — Plugin muss keinen eigenen Bitmap-
-         Path mehr bauen. -->
-    <PackageVersion Include="KroModIx.Plugin.Contracts" Version="1.18.0" />
+    <!-- v1.20.0: IDescriptionParser (`_host.Descriptions`) — zentraler
+         HTML+BBCode→Plaintext-Baukasten, uebernommen aus diesem Plugin,
+         Fix-Center statt Copy-Paste in 4 Plugins. v1.18.0: IImageDecoder
+         (zentraler Bild-Decoder mit ffmpeg-Chain fuer WebP/AVIF/DDS/HEIC). -->
+    <PackageVersion Include="KroModIx.Plugin.Contracts" Version="1.20.0" />
     <PackageVersion Include="Avalonia" Version="12.1.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="MinVer" Version="7.0.0" />

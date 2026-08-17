@@ -26,13 +26,15 @@ public sealed class ScheduleOnePlugin : IGameModPlugin, IUpdateNotifier
     public PluginMetadata Metadata { get; } = new(
         Id: "kroste.scheduleone",
         DisplayName: "Schedule I Mod-Manager",
-        Version: "0.2.0",
+        Version: "0.3.0",
         Author: "Kroste",
-        Description: "Mod-Verwaltung für Schedule I (TVGS, IL2CPP). v0.2.0: " +
-            "Auto-Load-All-Katalog (Background-Fetch aller Seiten statt nur 40), " +
-            "NexusDescriptionParser strippt BBCode sauber (v0.1 zeigte rohen " +
-            "[center][url=..]-Muell im Detail-Dialog), Detail-Dialog aufpoliert " +
-            "(920x760, Sektions-Cards, Cover 240x135). v0.1.0: " +
+        Description: "Mod-Verwaltung für Schedule I (TVGS, IL2CPP). v0.3.0: " +
+            "BBCode-Parser wandert in Host-Baukasten `_host.Descriptions` " +
+            "(Contracts v1.19) — Fix-Center statt Copy-Paste in 4 Plugins. " +
+            "v0.2.0: Auto-Load-All-Katalog (Background-Fetch aller Seiten statt " +
+            "nur 40), NexusDescriptionParser strippt BBCode sauber (v0.1 zeigte " +
+            "rohen [center][url=..]-Muell im Detail-Dialog), Detail-Dialog " +
+            "aufpoliert (920x760, Sektions-Cards, Cover 240x135). v0.1.0: " +
             "Drei Tabs (Installiert / Nexus-Katalog / Downloads), MelonLoader-Auto- " +
             "Install-Assistent (Direct-Download der offiziellen MelonLoader.x64.zip " +
             "vom LavaGang-GitHub-Release), Nexus-Voll-Katalog via GraphQL (Sort + " +
