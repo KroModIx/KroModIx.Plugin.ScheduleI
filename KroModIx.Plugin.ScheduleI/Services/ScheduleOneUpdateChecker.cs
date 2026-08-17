@@ -40,6 +40,12 @@ public sealed class ScheduleOneUpdateChecker
     public int PendingCount => _pending.Count;
     public DateTime LastCheckUtc => _lastCheckUtc;
 
+    /// <summary>v0.4.1: Callback der die aktuell physisch installierten
+    /// Mod-Keys liefert. Der Checker filtert damit verwaiste Manifests
+    /// (User hat DLL manuell geloescht, Manifest blieb → Phantom-Update-
+    /// Badge). Wenn null, kein Filter (rueckwaerts-kompatibel).</summary>
+    public Func<HashSet<string>>? InstalledKeysProvider { get; set; }
+
     public async Task<int> CheckAsync(CancellationToken ct = default)
     {
         var catalog = _catalog.Cached;
@@ -56,7 +62,21 @@ public sealed class ScheduleOneUpdateChecker
             return 0;
         }
 
-        var installed = _manifests.LoadAll()
+        var manifestEntries = _manifests.LoadAll();
+
+        var installedKeys = InstalledKeysProvider?.Invoke();
+        if (installedKeys is not null)
+        {
+            foreach (var (key, _) in manifestEntries)
+            {
+                if (installedKeys.Contains(key)) continue;
+                Log.Info("Manifest-GC: verwaistes Install-Manifest '{Key}' geloescht (Mod nicht mehr installiert)", key);
+                _manifests.Delete(key);
+            }
+            manifestEntries = manifestEntries.Where(x => installedKeys.Contains(x.Key)).ToList();
+        }
+
+        var installed = manifestEntries
             .Where(x => x.Manifest.NexusModId is not null
                 && !string.IsNullOrWhiteSpace(x.Manifest.NexusVersion))
             .ToList();

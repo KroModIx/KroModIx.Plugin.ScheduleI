@@ -26,9 +26,13 @@ public sealed class ScheduleOnePlugin : IGameModPlugin, IUpdateNotifier
     public PluginMetadata Metadata { get; } = new(
         Id: "kroste.scheduleone",
         DisplayName: "Schedule I Mod-Manager",
-        Version: "0.4.0",
+        Version: "0.4.1",
         Author: "Kroste",
-        Description: "Mod-Verwaltung für Schedule I (TVGS, IL2CPP). v0.4.0: " +
+        Description: "Mod-Verwaltung für Schedule I (TVGS, IL2CPP). v0.4.1: " +
+            "Manifest-GC-Fix — verwaiste Install-Manifests (User hat Mod-DLL manuell " +
+            "geloescht, Manifest blieb liegen) erzeugten Phantom-Update-Badges. " +
+            "UpdateChecker filtert + loescht verwaiste Manifests jetzt vor dem " +
+            "Version-Compare (portiert aus DSP v0.6.4). v0.4.0: " +
             "Detail-Dialog rendert Rich-HTML via _host.Descriptions.CreateRichView " +
             "(Host v1.21 HtmlRenderer-Baukasten) — Bold/Italic/Farben/Bilder/Listen " +
             "inline sichtbar statt Plain-Text-Wall. Plain-Text bleibt fuer KI-Prompts. " +
@@ -88,6 +92,20 @@ public sealed class ScheduleOnePlugin : IGameModPlugin, IUpdateNotifier
         _manifests = new ScheduleOneInstallManifestStore(host);
         _zipInstaller = new ScheduleOneZipInstaller(_manifests);
         _updateChecker = new ScheduleOneUpdateChecker(_manifests, _catalog);
+        _updateChecker.InstalledKeysProvider = () =>
+        {
+            var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var g in _activatedGames)
+            {
+                try
+                {
+                    foreach (var mod in _scanner.ScanAll(g))
+                        keys.Add(ScheduleOneInstallManifestStore.BuildKey(mod.Name));
+                }
+                catch (Exception ex) { host.Logger.Debug(ex, "Scan fuer Manifest-GC fehlgeschlagen: {Dir}", g.InstallDir); }
+            }
+            return keys;
+        };
         _covers = new CoverCache(host.CreateHttpClient("scheduleone-covers"), host);
         _bus = new DownloadEventBus();
         _bootstrapper = new MelonLoaderBootstrapper(host.CreateHttpClient("scheduleone-melonloader-bootstrap"));
