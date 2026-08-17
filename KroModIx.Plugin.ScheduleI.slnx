@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="KroModIx.Plugin.ScheduleI/KroModIx.Plugin.ScheduleI.csproj" />
+  <Project Path="KroModIx.Plugin.ScheduleI.Tests/KroModIx.Plugin.ScheduleI.Tests.csproj" />
+</Solution>

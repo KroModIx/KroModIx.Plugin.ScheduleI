@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "id": "kroste.scheduleone",
+  "displayName": "Schedule I Mod-Manager",
+  "version": "0.1.0",
+  "author": "Kroste",
+  "description": "Mod-Manager für Schedule I (TVGS, IL2CPP). v0.1.0: Drei Tabs (Installiert / Nexus-Katalog / Downloads), MelonLoader-Auto-Install-Assistent (Direct-Download der offiziellen MelonLoader.x64.zip vom LavaGang-GitHub-Release, kein Installer-EXE-Umweg noetig), Nexus-Voll-Katalog via GraphQL (Sort + Search + Kategorie-Filter), Nexus-Detail-Dialog mit KI-Zusammenfassung, SharpCompress-Auto-Layout-Install, IUpdateNotifier mit InstallManifest-Store, Row-Konsistenz in allen drei Tabs (Cover + Details + Doppelklick), NexusFileNameParser matcht beide CDN-Formate (Dash + Space). DE+EN. Async Refresh (kein UI-Freeze).",
+  "assembly": "KroModIx.Plugin.ScheduleI.dll",
+  "entryType": "KroModIx.Plugin.ScheduleI.ScheduleOnePlugin",
+  "minHostVersion": "1.18.0",
+  "targets": [
+    {
+      "gameId": "schedule-i",
+      "displayName": "Schedule I",
+      "steamAppId": 3164500,
+      "alternativeExecutableNames": ["Schedule I.exe"],
+      "platforms": "Both"
+    }
+  ],
+  "updateSource": {
+    "kind": "github",
+    "repo": "KroModIx/KroModIx.Plugin.ScheduleI"
+  }
+}

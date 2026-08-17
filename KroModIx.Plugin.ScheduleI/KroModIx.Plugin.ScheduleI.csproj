@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <RootNamespace>KroModIx.Plugin.ScheduleI</RootNamespace>
+    <AssemblyName>KroModIx.Plugin.ScheduleI</AssemblyName>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Host-Assemblies: ExcludeAssets=runtime — kommen vom Host mit. -->
+    <PackageReference Include="KroModIx.Plugin.Contracts"
+                      PrivateAssets="all" ExcludeAssets="runtime" />
+    <PackageReference Include="Avalonia"
+                      PrivateAssets="all" ExcludeAssets="runtime" />
+    <PackageReference Include="CommunityToolkit.Mvvm"
+                      PrivateAssets="all" ExcludeAssets="runtime" />
+    <!-- v0.2.0: SharpCompress ist plugin-eigene Runtime-Dep — MUSS ins
+         Plugin-Bundle (kein PrivateAssets/ExcludeAssets). -->
+    <PackageReference Include="SharpCompress" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="plugin.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
