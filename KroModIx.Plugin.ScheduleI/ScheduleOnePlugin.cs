@@ -26,10 +26,13 @@ public sealed class ScheduleOnePlugin : IGameModPlugin, IUpdateNotifier
     public PluginMetadata Metadata { get; } = new(
         Id: "kroste.scheduleone",
         DisplayName: "Schedule I Mod-Manager",
-        Version: "0.3.0",
+        Version: "0.4.0",
         Author: "Kroste",
-        Description: "Mod-Verwaltung für Schedule I (TVGS, IL2CPP). v0.3.0: " +
-            "BBCode-Parser wandert in Host-Baukasten `_host.Descriptions` " +
+        Description: "Mod-Verwaltung für Schedule I (TVGS, IL2CPP). v0.4.0: " +
+            "Detail-Dialog rendert Rich-HTML via _host.Descriptions.CreateRichView " +
+            "(Host v1.21 HtmlRenderer-Baukasten) — Bold/Italic/Farben/Bilder/Listen " +
+            "inline sichtbar statt Plain-Text-Wall. Plain-Text bleibt fuer KI-Prompts. " +
+            "v0.3.0: BBCode-Parser wandert in Host-Baukasten `_host.Descriptions` " +
             "(Contracts v1.19) — Fix-Center statt Copy-Paste in 4 Plugins. " +
             "v0.2.0: Auto-Load-All-Katalog (Background-Fetch aller Seiten statt " +
             "nur 40), NexusDescriptionParser strippt BBCode sauber (v0.1 zeigte " +

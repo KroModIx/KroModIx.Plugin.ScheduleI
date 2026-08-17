@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -36,6 +37,11 @@ public sealed partial class NexusModDetailViewModel : ObservableObject
     [ObservableProperty] private string _endorsementsText = "";
     [ObservableProperty] private string _summaryShort = "";
     [ObservableProperty] private string _descriptionText = "";
+    // v0.4.0: Rich-HTML-View statt Plain-Text-TextBlock. Wird vom
+    // Descriptions-Baukasten (Host v1.21+) erzeugt und im Detail-Window
+    // per ContentControl.Content angezeigt. Plain-Text-Version bleibt in
+    // DescriptionText fuer AI-Prompts + Loading-Placeholder.
+    [ObservableProperty] private Control? _descriptionView;
     [ObservableProperty] private bool _descriptionBusy;
 
     [ObservableProperty] private string _aiSummary = "";
@@ -108,9 +114,22 @@ public sealed partial class NexusModDetailViewModel : ObservableObject
             if (string.IsNullOrWhiteSpace(SummaryShort)) SummaryShort = detail.Summary;
 
             var html = detail.DescriptionHtml ?? "";
-            DescriptionText = string.IsNullOrWhiteSpace(html)
-                ? Strings.T("detail.desc_empty")
-                : _host.Descriptions.ToPlainText(html);
+            if (string.IsNullOrWhiteSpace(html))
+            {
+                DescriptionText = Strings.T("detail.desc_empty");
+                DescriptionView = null;
+            }
+            else
+            {
+                // Plain-Text bleibt fuer AI-Prompts (der Prompt braucht keinen
+                // HTML-Ballast). Rich-View fuer die UI-Anzeige.
+                DescriptionText = _host.Descriptions.ToPlainText(html);
+                var richHtml = _host.Descriptions.ToHtml(html);
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    DescriptionView = _host.Descriptions.CreateRichView(richHtml);
+                });
+            }
 
             // Falls Katalog-Row keinen Cover hatte, Detail liefert oft doch einen.
             if (Cover is null && !string.IsNullOrEmpty(detail.PictureUrl))

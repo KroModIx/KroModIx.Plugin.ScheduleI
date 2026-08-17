@@ -239,15 +239,33 @@ public sealed class NexusModDetailWindow : Window
         };
         title.Classes.Add("section-label");
 
-        var body = new TextBlock
+        // v0.4.0: Rich-HTML-Rendering via _host.Descriptions.CreateRichView
+        // (HtmlPanel) statt Plain-Text-TextBlock. Fallback wenn noch nicht
+        // fertig geladen: kurzer Loading-TextBlock (DescriptionText enthaelt
+        // dann noch "wird geladen …").
+        var richHost = new ContentControl
+        {
+            Margin = new Thickness(0, 6, 0, 0),
+        };
+        richHost.Bind(ContentControl.ContentProperty,
+            new Binding(nameof(NexusModDetailViewModel.DescriptionView)));
+
+        var loadingFallback = new TextBlock
         {
             TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(0, 6, 0, 0),
-            LineHeight = 22,
         };
-        body.Bind(TextBlock.TextProperty, new Binding(nameof(NexusModDetailViewModel.DescriptionText)));
+        loadingFallback.Classes.Add("muted");
+        loadingFallback.Bind(TextBlock.TextProperty,
+            new Binding(nameof(NexusModDetailViewModel.DescriptionText)));
+        loadingFallback.Bind(TextBlock.IsVisibleProperty,
+            new Binding(nameof(NexusModDetailViewModel.DescriptionView))
+            {
+                Converter = new Avalonia.Data.Converters.FuncValueConverter<Control?, bool>(
+                    c => c is null),
+            });
 
-        var stack = new StackPanel { Children = { title, body } };
+        var stack = new StackPanel { Children = { title, richHost, loadingFallback } };
         var card = new Border { Padding = new Thickness(16), Child = stack };
         card.Classes.Add("card");
         return card;
