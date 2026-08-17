@@ -185,6 +185,10 @@ public sealed partial class NexusViewModel : ObservableObject, IDisposable
             StatusText = Strings.T("status.error_prefix") + ex.Message;
         }
         finally { IsBusy = false; _loadGate.Release(); }
+        // v0.2: nach dem initialen Load die restlichen Seiten IM HINTERGRUND
+        // nachladen — User will alle Mods sehen, nicht nur 40. Fire-and-
+        // forget, mit Throttle damit Nexus-GraphQL nicht gepresst wird.
+        _ = AutoLoadRemainingAsync();
     }
 
     [RelayCommand]
@@ -209,6 +213,50 @@ public sealed partial class NexusViewModel : ObservableObject, IDisposable
             StatusText = Strings.T("status.error_prefix") + ex.Message;
         }
         finally { IsBusy = false; _loadGate.Release(); }
+    }
+
+    /// <summary>Nach initialem Load die restlichen Katalog-Seiten im
+    /// Hintergrund nachziehen — der User soll ALLE Mods sehen, nicht nur
+    /// die erste 40er-Seite. 500ms Delay zwischen Batches damit Nexus-
+    /// GraphQL nicht ratelimit-t wird und die UI nicht steckenbleibt.
+    /// Bricht bei erneutem <see cref="LoadFirstPageAsync"/> (Search/Sort-
+    /// Wechsel) implizit durch den _loadGate ab.</summary>
+    private async Task AutoLoadRemainingAsync()
+    {
+        var initialQuery = _catalog.CurrentQuery;
+        var initialSort = _catalog.CurrentSort;
+        int consecutiveErrors = 0;
+        while (_catalog.HasMore)
+        {
+            // Wenn zwischenzeitlich Search/Sort gewechselt hat, dieser
+            // Auto-Load ist obsolet.
+            if (_catalog.CurrentQuery != initialQuery || _catalog.CurrentSort != initialSort)
+                return;
+            await Task.Delay(500);
+            if (!await _loadGate.WaitAsync(0)) { await Task.Delay(1000); continue; }
+            try
+            {
+                var before = _catalog.Cached.Count;
+                await _catalog.LoadNextPageAsync();
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    for (int i = before; i < _catalog.Cached.Count; i++)
+                        Rows.Add(GetOrCreateRow(_catalog.Cached[i]));
+                    UpdateStatus();
+                    OnPropertyChanged(nameof(HasMore));
+                });
+                _ = LoadCoversAsync(before);
+                consecutiveErrors = 0;
+            }
+            catch (Exception ex)
+            {
+                _host.Logger.Debug(ex, "Nexus-Auto-Load-More warnung");
+                consecutiveErrors++;
+                if (consecutiveErrors >= 3) return; // aufgeben nach 3 Fehlern in Folge
+            }
+            finally { _loadGate.Release(); }
+        }
+        _host.Logger.Info("Nexus-Auto-Load fertig: {N} Mods total", _catalog.Cached.Count);
     }
 
     [RelayCommand]

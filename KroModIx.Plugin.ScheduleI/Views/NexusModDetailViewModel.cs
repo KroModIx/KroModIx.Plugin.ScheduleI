@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -111,7 +110,7 @@ public sealed partial class NexusModDetailViewModel : ObservableObject
             var html = detail.DescriptionHtml ?? "";
             DescriptionText = string.IsNullOrWhiteSpace(html)
                 ? Strings.T("detail.desc_empty")
-                : HtmlToText(html);
+                : NexusDescriptionParser.ToText(html);
 
             // Falls Katalog-Row keinen Cover hatte, Detail liefert oft doch einen.
             if (Cover is null && !string.IsNullOrEmpty(detail.PictureUrl))
@@ -168,18 +167,6 @@ public sealed partial class NexusModDetailViewModel : ObservableObject
         _host.Shell.OpenExternalUrl(
             $"https://www.nexusmods.com/{ScheduleOneNexusCatalog.GameSlug}/mods/{_modId}");
 
-    /// <summary>Rudimentaerer HTML-→-Text-Parser fuer Nexus-Descriptions.
-    /// Nexus-BBCode-Konvertierung liefert oft `&lt;br&gt;` + `&lt;p&gt;` + `&lt;strong&gt;`. Wir
-    /// strippen Tags und decodieren HTML-Entities. Kein Renderer, aber
-    /// ausreichend fuer Anzeige.</summary>
-    private static string HtmlToText(string html)
-    {
-        var s = Regex.Replace(html, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
-        s = Regex.Replace(s, @"</p\s*>", "\n\n", RegexOptions.IgnoreCase);
-        s = Regex.Replace(s, @"<[^>]+>", ""); // alle anderen Tags weg
-        s = System.Net.WebUtility.HtmlDecode(s);
-        // Doppelte Leerzeilen kollabieren
-        s = Regex.Replace(s, @"\n{3,}", "\n\n");
-        return s.Trim();
-    }
+    // HTML+BBCode-Parsing der Nexus-Description ist in
+    // NexusDescriptionParser ausgelagert (testbar ohne Avalonia/MVVM-Deps).
 }
