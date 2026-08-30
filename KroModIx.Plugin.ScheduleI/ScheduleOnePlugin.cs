@@ -120,14 +120,26 @@ public sealed class ScheduleOnePlugin : IGameModPlugin, IUpdateNotifier
             try { await Task.Delay(TimeSpan.FromSeconds(15), ct); } catch { return; }
             try { await _updateChecker.CheckAsync(ct); }
             catch (Exception ex) { host.Logger.Debug(ex, "Auto-Update-Check fehlgeschlagen"); }
-            try { await host.RequestUpdateBadgeRefreshAsync(); } catch { }
+            try { await host.RequestUpdateBadgeRefreshAsync(); }
+            catch (Exception ex)
+            {
+                // Ohne Log bleibt ein haengender Kachel-Badge unerklaerbar —
+                // er faellt dann erst bei der naechsten 60s-Periodik zurueck.
+                host.Logger.Debug(ex, "Badge-Refresh fehlgeschlagen");
+            }
         }, ct);
         _bus.ModInstalled += (_, _) =>
         {
             _ = Task.Run(async () =>
             {
                 try { await _updateChecker.CheckAsync(); } catch { }
-                try { await host.RequestUpdateBadgeRefreshAsync(); } catch { }
+                try { await host.RequestUpdateBadgeRefreshAsync(); }
+            catch (Exception ex)
+            {
+                // Ohne Log bleibt ein haengender Kachel-Badge unerklaerbar —
+                // er faellt dann erst bei der naechsten 60s-Periodik zurueck.
+                host.Logger.Debug(ex, "Badge-Refresh fehlgeschlagen");
+            }
             });
         };
 
