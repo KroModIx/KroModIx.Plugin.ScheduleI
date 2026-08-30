@@ -2,9 +2,9 @@
   "schema": 1,
   "id": "kroste.scheduleone",
   "displayName": "Schedule I Mod-Manager",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "author": "Kroste",
-  "description": "Mod-Manager für Schedule I (TVGS, IL2CPP). v0.4.1: Manifest-GC-Fix — verwaiste Install-Manifests (User hat Mod-DLL manuell geloescht, Manifest blieb liegen) erzeugten Phantom-Update-Badges. UpdateChecker filtert + loescht verwaiste Manifests jetzt vor dem Version-Compare (portiert aus DSP v0.6.4). v0.4.0: Detail-Dialog rendert jetzt Rich-HTML via `_host.Descriptions.CreateRichView` (Host v1.21 HtmlRenderer-Baukasten) — Bold/Italic/Farben/Bilder/Listen inline sichtbar statt Plain-Text-Wall. Plain-Text bleibt fuer KI-Prompts. v0.3.0: BBCode-Parser wandert in Host-Baukasten `_host.Descriptions`. v0.2.0: Auto-Load-All-Katalog, Detail-Dialog aufpoliert (920x760, Sektions-Cards, Cover 240x135). v0.1.0: Drei Tabs, MelonLoader-Auto-Install, Nexus-Voll-Katalog, KI-Zusammenfassung, IUpdateNotifier, Row-Konsistenz. DE+EN.",
+  "description": "Mod-Manager für Schedule I (TVGS, IL2CPP). v0.4.2: Badge-Refresh-Fehler landen im Log statt still verschluckt zu werden. v0.4.1: Manifest-GC-Fix — verwaiste Install-Manifests (User hat Mod-DLL manuell geloescht, Manifest blieb liegen) erzeugten Phantom-Update-Badges. UpdateChecker filtert + loescht verwaiste Manifests jetzt vor dem Version-Compare (portiert aus DSP v0.6.4). v0.4.0: Detail-Dialog rendert jetzt Rich-HTML via `_host.Descriptions.CreateRichView` (Host v1.21 HtmlRenderer-Baukasten) — Bold/Italic/Farben/Bilder/Listen inline sichtbar statt Plain-Text-Wall. Plain-Text bleibt fuer KI-Prompts. v0.3.0: BBCode-Parser wandert in Host-Baukasten `_host.Descriptions`. v0.2.0: Auto-Load-All-Katalog, Detail-Dialog aufpoliert (920x760, Sektions-Cards, Cover 240x135). v0.1.0: Drei Tabs, MelonLoader-Auto-Install, Nexus-Voll-Katalog, KI-Zusammenfassung, IUpdateNotifier, Row-Konsistenz. DE+EN.",
   "assembly": "KroModIx.Plugin.ScheduleI.dll",
   "entryType": "KroModIx.Plugin.ScheduleI.ScheduleOnePlugin",
   "minHostVersion": "1.21.0",
@@ -13,7 +13,9 @@
       "gameId": "schedule-i",
       "displayName": "Schedule I",
       "steamAppId": 3164500,
-      "alternativeExecutableNames": ["Schedule I.exe"],
+      "alternativeExecutableNames": [
+        "Schedule I.exe"
+      ],
       "platforms": "Both"
     }
   ],
