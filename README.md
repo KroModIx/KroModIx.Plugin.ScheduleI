@@ -11,7 +11,18 @@ IL2CPP-basiert). Auto-Install von MelonLoader direkt aus dem Plugin,
 Nexus-Katalog-Integration, Downloads-Ordner mit Bulk-Install und
 Details-Dialog + KI-Zusammenfassung. DE+EN-Übersetzung.
 
-## Features (v0.1.0)
+## Voraussetzungen
+
+Braucht den [KroModIx-Host](https://github.com/KroModIx/KroModIx) **ab
+v1.27.0** — dort sitzen der Backup-Baukasten und der gemeinsame
+Versions-Vergleich, gegen die dieses Plugin gebaut ist. Ältere Hosts laden
+das Plugin nicht.
+
+## Screenshot
+
+![Nexus-Katalog für MelonLoader-Mods](docs/screenshot.png)
+
+## Features
 
 ### Installiert-Tab
 
@@ -76,6 +87,18 @@ die frischen Übersetzungen aktiv (Host-Tab-Cache-Invalidate seit v1.14.7).
 dotnet build -c Release
 dotnet test
 ```
+
+## Backups vor jedem Install
+
+Bevor das Plugin Dateien ins Spiel schreibt, legt es einen Snapshot des
+Ziel-Verzeichnisses an — bei Einzel-Installs einen pro Mod, bei Bulk-Installs
+**einen** vor dem ganzen Durchlauf. Zurückspielen läuft über das
+Backups-Fenster im Kontextmenü der Sidebar-Kachel; es gibt bewusst kein
+Auto-Rollback, damit du entscheidest, welchen Stand du zurückholst.
+Aufbewahrt werden die letzten zehn Snapshots pro Spiel.
+
+Schlägt ein Snapshot fehl, läuft der Install trotzdem durch (mit Log-Eintrag)
+— das Backup ist ein Netz, kein Türsteher.
 
 ## Lizenz
 
