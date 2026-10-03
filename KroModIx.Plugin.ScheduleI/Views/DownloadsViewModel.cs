@@ -69,7 +69,7 @@ public sealed partial class DownloadsViewModel : ObservableObject, IDisposable
         try
         {
             var dirs = new List<string>();
-            if (Directory.Exists(Path.Combine(_game.InstallDir, "Mods"))) dirs.Add(Path.Combine(_game.InstallDir, "Mods"));
+            dirs.AddRange(ModFolderDiscovery.FindAll(_game.InstallDir, "Mods", "UserLibs"));
             if (dirs.Count == 0) return;
             var gameKey = _game.Target.SteamAppId is int appId ? $"steam:{appId}" : _game.InstallDir;
             await _host.Backup.CreateSnapshotAsync(

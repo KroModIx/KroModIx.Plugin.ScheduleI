@@ -166,7 +166,18 @@ public sealed partial class InstalledModsViewModel : ObservableObject, IDisposab
     [RelayCommand]
     private void OpenPluginsFolder()
     {
-        var dir = _paths.GetModsDir(_game);
+        // v0.6.0: Ensure statt Get — nach einer Neuinstallation existiert der
+        // Mods-Ordner nicht, und OpenDirectory auf einen fehlenden Pfad tut
+        // nichts sichtbares. MelonLoader legt ihn sonst erst beim ersten
+        // Spielstart an.
+        var dir = _paths.EnsureModsDir(_game);
+        if (dir is null)
+        {
+            _host.Notifications.Notify(
+                $"Mods-Ordner konnte nicht angelegt werden: {_game.InstallDir}",
+                NotificationLevel.Warning);
+            return;
+        }
         _host.Shell.OpenDirectory(dir);
     }
 

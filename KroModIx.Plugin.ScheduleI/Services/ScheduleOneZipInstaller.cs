@@ -69,7 +69,10 @@ public sealed class ScheduleOneZipInstaller
             // 2) Fallback: alle .dll finden und flach nach Mods/ extrahieren.
             // Gilt fuer Nexus-Mods die einfach nur eine DLL ausliefern oder
             // eine DLL in einem Root-Ordner (den wir strippen).
-            var modsDir = Path.Combine(installDir, "Mods");
+            // v0.6.0: anlegen statt annehmen — ohne vorherigen MelonLoader-Start
+            // existiert Mods/ nicht, und der Install lief ins Leere.
+            var modsDir = ModFolderDiscovery.FindOrCreate(installDir, "Mods", "mods")
+                          ?? Path.Combine(installDir, "Mods");
             Directory.CreateDirectory(modsDir);
             var dlls = entries.Where(e =>
                 (e.Key ?? "").EndsWith(".dll", StringComparison.OrdinalIgnoreCase)).ToList();
