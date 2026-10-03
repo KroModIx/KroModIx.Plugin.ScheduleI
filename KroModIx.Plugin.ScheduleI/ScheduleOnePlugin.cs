@@ -15,7 +15,7 @@ namespace KroModIx.Plugin.ScheduleI;
 /// Assistent (direkter Download vom offiziellen LavaGang/MelonLoader-
 /// GitHub-Release). Nutzt Host-Contract <see cref="IHostServices.Nexus"/>
 /// fuer den Katalog (Contracts v1.15+, oeffentliches GraphQL).
-/// SharpCompress fuer ZIP/RAR/7z-Install.
+/// Der Host-Archiv-Baukasten fuer ZIP/RAR/7z-Install.
 ///
 /// <para>Portiert 1:1 vom DSP-Plugin-Muster (BepInEx → MelonLoader,
 /// Mods/ statt BepInEx/plugins/, kein Ordner-Layout). Alle DSP-
@@ -46,7 +46,7 @@ public sealed class ScheduleOnePlugin : IGameModPlugin, IUpdateNotifier
             "Install-Assistent (Direct-Download der offiziellen MelonLoader.x64.zip " +
             "vom LavaGang-GitHub-Release), Nexus-Voll-Katalog via GraphQL (Sort + " +
             "Search + Kategorie-Filter), Nexus-Detail-Dialog mit KI-Zusammenfassung, " +
-            "SharpCompress-Auto-Layout-Install (Mods/ oder Flat), IUpdateNotifier " +
+            "Auto-Layout-Install (Mods/ oder Flat), IUpdateNotifier " +
             "mit InstallManifest-Store, Row-Konsistenz in allen drei Tabs (Cover + " +
             "Details + Doppelklick), NexusFileNameParser matcht beide CDN-Formate " +
             "(Dash + Space). DE+EN. Async Refresh (kein UI-Freeze).");
@@ -90,7 +90,7 @@ public sealed class ScheduleOnePlugin : IGameModPlugin, IUpdateNotifier
         _downloader = new ScheduleOneDownloader(host.Nexus,
             host.CreateHttpClient("scheduleone-downloads"), _pluginPaths);
         _manifests = new ScheduleOneInstallManifestStore(host);
-        _zipInstaller = new ScheduleOneZipInstaller(_manifests);
+        _zipInstaller = new ScheduleOneZipInstaller(host.Archives, _manifests);
         _updateChecker = new ScheduleOneUpdateChecker(_manifests, _catalog);
         _updateChecker.InstalledKeysProvider = () =>
         {
@@ -108,7 +108,9 @@ public sealed class ScheduleOnePlugin : IGameModPlugin, IUpdateNotifier
         };
         _covers = new CoverCache(host.CreateHttpClient("scheduleone-covers"), host);
         _bus = new DownloadEventBus();
-        _bootstrapper = new MelonLoaderBootstrapper(host.CreateHttpClient("scheduleone-melonloader-bootstrap"));
+        _bootstrapper = new MelonLoaderBootstrapper(
+            host.CreateHttpClient("scheduleone-melonloader-bootstrap"),
+            host.GitHub, host.Archives);
         _enricher = new ScheduleOneNexusRowEnricher(host.Nexus, _covers, host);
         _activatedGames = activatedGames;
 

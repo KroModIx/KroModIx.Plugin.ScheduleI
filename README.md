@@ -14,7 +14,8 @@ Details-Dialog + KI-Zusammenfassung. DE+EN-Übersetzung.
 ## Voraussetzungen
 
 Braucht den [KroModIx-Host](https://github.com/KroModIx/KroModIx) **ab
-v1.27.0** — dort sitzen der Backup-Baukasten und der gemeinsame
+v1.33.0** — dort sitzen der Backup-Baukasten, der Archiv- und der
+GitHub-Baukasten (beide seit v0.7.0 genutzt) und der gemeinsame
 Versions-Vergleich, gegen die dieses Plugin gebaut ist. Ältere Hosts laden
 das Plugin nicht.
 

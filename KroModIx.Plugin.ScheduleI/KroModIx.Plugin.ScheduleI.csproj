@@ -14,9 +14,10 @@
                       PrivateAssets="all" ExcludeAssets="runtime" />
     <PackageReference Include="CommunityToolkit.Mvvm"
                       PrivateAssets="all" ExcludeAssets="runtime" />
-    <!-- v0.2.0: SharpCompress ist plugin-eigene Runtime-Dep — MUSS ins
-         Plugin-Bundle (kein PrivateAssets/ExcludeAssets). -->
-    <PackageReference Include="SharpCompress" />
+    <!-- v0.7.0: SharpCompress ist raus — Archive oeffnet der Host
+         (IHostServices.Archives). CopyLocalLockFileAssemblies bleibt an,
+         damit eine kuenftige Abhaengigkeit ohne weiteren Eingriff im Bundle
+         landet. -->
   </ItemGroup>
 
   <ItemGroup>

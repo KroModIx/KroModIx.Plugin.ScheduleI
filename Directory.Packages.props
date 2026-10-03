@@ -6,14 +6,13 @@
          Wall). v1.20.0: IDescriptionParser (`_host.Descriptions`) —
          zentraler HTML+BBCode→Plaintext-Baukasten. v1.18.0:
          IImageDecoder (zentraler Bild-Decoder). -->
-    <PackageVersion Include="KroModIx.Plugin.Contracts" Version="1.29.0" />
+    <PackageVersion Include="KroModIx.Plugin.Contracts" Version="1.33.0" />
+    <!-- v0.7.0: Attrappen der Host-Baukaesten fuer das Testprojekt, aus
+         demselben Tag wie die Contracts. -->
+    <PackageVersion Include="KroModIx.Plugin.TestKit" Version="1.33.0" />
     <PackageVersion Include="Avalonia" Version="12.1.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="MinVer" Version="7.0.0" />
-    <!-- v0.2.0: SharpCompress fuer ZIP/RAR/7z-Support im Downloads-Tab
-         (Nexus liefert alle drei Formate). 1.0 statt 0.42 wegen CVE. -->
-    <PackageVersion Include="SharpCompress" Version="1.0.0" />
-
     <!-- Tests -->
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />

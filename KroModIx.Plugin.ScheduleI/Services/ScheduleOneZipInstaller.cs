@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using KroModIx.Plugin.Contracts;
 using NLog;
-using SharpCompress.Archives;
 
 namespace KroModIx.Plugin.ScheduleI.Services;
 
@@ -26,12 +25,22 @@ namespace KroModIx.Plugin.ScheduleI.Services;
 public sealed class ScheduleOneZipInstaller
 {
     private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+    private readonly IArchiveService _archives;
     private readonly ScheduleOneInstallManifestStore? _manifests;
 
-    public ScheduleOneZipInstaller(ScheduleOneInstallManifestStore? manifests = null)
+    public ScheduleOneZipInstaller(IArchiveService archives,
+        ScheduleOneInstallManifestStore? manifests = null)
     {
+        _archives = archives;
         _manifests = manifests;
     }
+
+    /// <summary>Endungs-Vorfilter fuer den Downloads-Tab. Kommt aus dem
+    /// Host-Baukasten, damit ein dort neu unterstuetztes Format nicht in
+    /// neun Plugins nachgetragen werden muss.</summary>
+    public IReadOnlyList<string> SupportedExtensions => _archives.SupportedExtensions;
+
+    public bool HasSupportedExtension(string path) => _archives.HasSupportedExtension(path);
 
     public ScheduleOneZipInstallResult Install(string archivePath, DetectedGame game)
     {
@@ -43,27 +52,31 @@ public sealed class ScheduleOneZipInstaller
 
         try
         {
-            using var archive = ArchiveFactory.Open(archivePath);
-            var entries = archive.Entries
-                .Where(e => !e.IsDirectory && !string.IsNullOrEmpty(e.Key))
-                .ToList();
+            // Am Inhalt pruefen, nicht an der Endung: ein Download mit
+            // falscher Endung landete sonst unveraendert im Spiel.
+            if (_archives.DetectKind(archivePath) == ArchiveKind.Unknown)
+                return ScheduleOneZipInstallResult.Fail(
+                    "Das ist kein lesbares Archiv (ZIP/RAR/7z) — eventuell ein abgebrochener Download.");
+
+            var entries = _archives.List(archivePath);
             if (entries.Count == 0)
                 return ScheduleOneZipInstallResult.Fail("Archiv ist leer.");
 
-            var normalized = entries.Select(e => (e.Key ?? "").Replace('\\', '/')).ToList();
-
             // 1) Bekanntes Layout — enthaelt Mods/ oder UserLibs/ oder Plugins/
             // auf irgend-einer Ebene (typisch bei kompletten Mod-Bundles).
-            bool knownLayout = normalized.Any(p =>
-                p.StartsWith("Mods/", StringComparison.OrdinalIgnoreCase) ||
-                p.StartsWith("UserLibs/", StringComparison.OrdinalIgnoreCase) ||
-                p.StartsWith("Plugins/", StringComparison.OrdinalIgnoreCase));
+            bool knownLayout = entries.Any(e =>
+                e.Path.StartsWith("Mods/", StringComparison.OrdinalIgnoreCase) ||
+                e.Path.StartsWith("UserLibs/", StringComparison.OrdinalIgnoreCase) ||
+                e.Path.StartsWith("Plugins/", StringComparison.OrdinalIgnoreCase));
             if (knownLayout)
             {
-                var installed = ExtractDirect(entries, installDir);
-                WriteManifests(installed, archivePath);
+                var r = _archives.Extract(archivePath, installDir);
+                if (Abgelehnt(r) is { } warnung)
+                    return ScheduleOneZipInstallResult.Fail(warnung);
+                WriteManifests(r.ExtractedPaths, archivePath);
                 return ScheduleOneZipInstallResult.Ok(
-                    $"Direkt-Layout: {installed.Count} Datei(en) ins Game-Root extrahiert.", installed);
+                    $"Direkt-Layout: {r.Count} Datei(en) ins Game-Root extrahiert.",
+                    r.ExtractedPaths);
             }
 
             // 2) Fallback: alle .dll finden und flach nach Mods/ extrahieren.
@@ -74,24 +87,19 @@ public sealed class ScheduleOneZipInstaller
             var modsDir = ModFolderDiscovery.FindOrCreate(installDir, "Mods", "mods")
                           ?? Path.Combine(installDir, "Mods");
             Directory.CreateDirectory(modsDir);
-            var dlls = entries.Where(e =>
-                (e.Key ?? "").EndsWith(".dll", StringComparison.OrdinalIgnoreCase)).ToList();
-            if (dlls.Count == 0)
+            if (!entries.Any(e => e.Path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)))
                 return ScheduleOneZipInstallResult.Fail(
                     "Archiv enthaelt keine .dll — kein MelonLoader-Mod erkennbar.");
 
-            var installedFlat = new List<string>();
-            foreach (var e in dlls)
-            {
-                var name = Path.GetFileName(e.Key!);
-                var dst = Path.Combine(modsDir, name);
-                ExtractOne(e, dst);
-                installedFlat.Add(dst);
-            }
-            WriteManifests(installedFlat, archivePath);
+            var flach = _archives.Extract(archivePath, modsDir, new ArchiveExtractOptions(
+                Filter: p => p.EndsWith(".dll", StringComparison.OrdinalIgnoreCase),
+                Flatten: true));
+            if (Abgelehnt(flach) is { } warnung2)
+                return ScheduleOneZipInstallResult.Fail(warnung2);
+            WriteManifests(flach.ExtractedPaths, archivePath);
             return ScheduleOneZipInstallResult.Ok(
-                $"Flat-Layout: {installedFlat.Count} DLL(s) nach Mods/ extrahiert.",
-                installedFlat);
+                $"Flat-Layout: {flach.Count} DLL(s) nach Mods/ extrahiert.",
+                flach.ExtractedPaths);
         }
         catch (Exception ex)
         {
@@ -100,27 +108,22 @@ public sealed class ScheduleOneZipInstaller
         }
     }
 
-    private static IReadOnlyList<string> ExtractDirect(IEnumerable<IArchiveEntry> entries, string installDir)
+    /// <summary>Hat der Ausbruch-Schutz Eintraege abgelehnt, bricht der
+    /// Install mit Meldung ab — statt still das zu installieren was durchkam.
+    /// Das trifft auch ein bloss kaputtes Archiv mit einem krummen Eintrag
+    /// unter zweihundert; bewusst, denn ein Archiv das aus dem
+    /// Spielverzeichnis herausschreiben will ist nicht „ueberwiegend in
+    /// Ordnung", und die Entscheidung gehoert dem Nutzer.</summary>
+    private static string? Abgelehnt(ArchiveExtractResult r)
     {
-        var installed = new List<string>();
-        foreach (var e in entries)
-        {
-            var name = (e.Key ?? "").Replace('\\', '/');
-            if (string.IsNullOrEmpty(name) || name.EndsWith('/')) continue;
-            if (name.Contains("..")) { Log.Warn("Zip-Slip: {N}", name); continue; }
-            var dst = Path.Combine(installDir, name.Replace('/', Path.DirectorySeparatorChar));
-            Directory.CreateDirectory(Path.GetDirectoryName(dst)!);
-            ExtractOne(e, dst);
-            installed.Add(dst);
-        }
-        return installed;
-    }
-
-    private static void ExtractOne(IArchiveEntry entry, string destination)
-    {
-        using var input = entry.OpenEntryStream();
-        using var output = File.Create(destination);
-        input.CopyTo(output);
+        if (r.SkippedUnsafe.Count == 0) return null;
+        Log.Warn("Ausbruchsversuch im Archiv, {Count} Eintrag/Eintraege abgelehnt: {Entries}",
+            r.SkippedUnsafe.Count, string.Join(", ", r.SkippedUnsafe));
+        return $"Abgebrochen: {r.SkippedUnsafe.Count} Eintrag/Eintraege wollten aus dem "
+             + "Spielverzeichnis herausschreiben — "
+             + string.Join(", ", r.SkippedUnsafe.Take(3))
+             + (r.SkippedUnsafe.Count > 3 ? ", …" : "")
+             + $". {r.Count} Datei(en) waren schon geschrieben, bevor das auffiel.";
     }
 
     /// <summary>Fuer jeden installierten DLL-Basename ein Manifest im
@@ -150,7 +153,6 @@ public sealed class ScheduleOneZipInstaller
         }
     }
 
-    public static readonly string[] SupportedExtensions = new[] { ".zip", ".rar", ".7z" };
 }
 
 public sealed record ScheduleOneZipInstallResult(bool Success, string Message, IReadOnlyList<string> InstalledPaths)
