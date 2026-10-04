@@ -91,3 +91,21 @@ er anfragt — inklusive des Raten-Sperren-Zweigs. Der Download läuft dabei
 Adresse mitschreibt; ein Test, der dafür ins Netz greift, würde prüfen, was
 GitHub heute als neuestes MelonLoader ausliefert, nicht was das Plugin
 daraus macht.
+
+## Fremde Mod-Manager (ab v0.8.0)
+
+`MelonLoaderScanner` setzt `ScheduleOneMod.ManagedBy`, wenn eine DLL in
+`Mods/` **einem anderen Mod-Manager** gehört —
+`ForeignManagerDetection` aus den Contracts (v1.34.0), erkannt am **Verweis**,
+nicht am Namen. `Uninstall` und `SetEnabled` werfen dann, die Zeile verliert
+ihre Knöpfe und nennt stattdessen den Verwalter, die Bulk-Pfade überspringen
+sie.
+
+r2modman und Gale bedienen auch MelonLoader-Spiele. Der Anlass ist bezahlt,
+nur in einem anderen Plugin: am 04.10.2026 hat ein Deinstallieren-Klick im
+Icarus-Plugin lmms zusammengeführtes Pak entfernt und damit lautlos eine Mod
+aus dem Spiel genommen.
+
+**Die Prüfung sitzt im ViewModel vor dem Bestätigungsdialog** — sonst
+bestätigt der Nutzer etwas, das gar nicht passieren darf. 5 neue Tests, Suite
+bei 28.

@@ -38,13 +38,17 @@ public sealed class MelonLoaderScanner
             var (baseName, enabled) = ClassifyDllName(name);
             if (baseName is null) continue;
             var info = new FileInfo(f);
+            // v0.8.0: gehoert die DLL r2modman & Co., wird sie gelistet aber
+            // nicht angefasst.
+            ForeignManagerDetection.IsForeignManaged(f, out var verwalter);
             result.Add(new ScheduleOneMod(
                 Path: f,
                 Name: baseName,
                 IsEnabled: enabled,
                 IsDirectory: false,
                 SizeBytes: info.Length,
-                InstalledUtc: info.LastWriteTimeUtc));
+                InstalledUtc: info.LastWriteTimeUtc,
+                ManagedBy: verwalter.Length > 0 ? verwalter : null));
         }
 
         return result.OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase).ToList();
